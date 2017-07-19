@@ -26,6 +26,9 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> im
 
     public void setSecretHeader(boolean secretHeader) {
         this.secretHeader = secretHeader;
+        if (secretHeader) {
+            data.add(null);
+        }
     }
 
     public FileAdapter(List<File> data) {
