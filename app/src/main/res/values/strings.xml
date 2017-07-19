@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">uDiskReader</string>
+    <string name="title_activity_file">FileActivity</string>
+</resources>
