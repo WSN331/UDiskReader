@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
-import android.os.storage.StorageManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -23,17 +22,9 @@ import android.widget.Toast;
 import com.ethanco.lib.PasswordDialog;
 import com.ethanco.lib.abs.OnPositiveButtonListener;
 import com.hdu.wsn.uDiskReader.R;
-import com.hdu.wsn.uDiskReader.usb.file.FileUtil;
+import com.hdu.wsn.uDiskReader.usb.file.FileReader;
 import com.hdu.wsn.uDiskReader.usb.jnilib.UDiskConnection;
 import com.hdu.wsn.uDiskReader.usb.jnilib.UDiskLib;
-
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 public class FileActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, FileView{
     private static String TAG = "MainActivity";

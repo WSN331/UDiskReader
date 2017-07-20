@@ -1,10 +1,11 @@
-package com.hdu.wsn.uDiskReader.ui;
+package com.hdu.wsn.uDiskReader.usb.file;
 
 import android.content.Context;
 import android.os.storage.StorageManager;
 import android.view.View;
 
-import com.hdu.wsn.uDiskReader.usb.file.FileUtil;
+import com.hdu.wsn.uDiskReader.ui.FileAdapter;
+import com.hdu.wsn.uDiskReader.ui.FileView;
 import com.hdu.wsn.uDiskReader.usb.jnilib.UDiskLib;
 
 import java.io.File;
@@ -37,7 +38,7 @@ public class FileReader {
     /**
      * 读取设备
      */
-    public void readDeviceList() {
+    private void readDeviceList() {
         String[] result = null;
         StorageManager storageManager = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
         try {
@@ -120,10 +121,7 @@ public class FileReader {
         adapter.setOnRecyclerViewItemClickListener(new FileAdapter.OnRecyclerViewItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                int index = position;
-                if (currentFolderList.size() > 0 || loginFlag) {
-                    index++;
-                }
+                int index = getRealPosition(position);
                 if (index > 0) {
                     File file = fileList.get(index - 1);
                     if (file.isDirectory()) {
@@ -136,9 +134,21 @@ public class FileReader {
                 } else {
                     fileView.showPasswordView();
                 }
-
             }
         });
+    }
+
+    /**
+     * 获取文件下标+1 （因此这个值如果是0代表该项不是真实文件，而是私密空间栏）
+     * @param position 列表下标
+     * @return 文件下标+1
+     */
+    private int getRealPosition(int position) {
+        int index = position;
+        if (currentFolderList.size() > 0 || loginFlag) {
+            index ++;
+        }
+        return index;
     }
 
     /**
