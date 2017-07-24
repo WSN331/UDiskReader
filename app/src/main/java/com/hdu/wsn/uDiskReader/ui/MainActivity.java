@@ -23,6 +23,8 @@ import android.widget.Toast;
 import com.ethanco.lib.PasswordDialog;
 import com.ethanco.lib.abs.OnPositiveButtonListener;
 import com.hdu.wsn.uDiskReader.R;
+import com.hdu.wsn.uDiskReader.ui.view.FileAdapter;
+import com.hdu.wsn.uDiskReader.ui.view.MyItemDecoration;
 import com.hdu.wsn.uDiskReader.usb.file.FileUtil;
 import com.hdu.wsn.uDiskReader.usb.jnilib.UDiskConnection;
 import com.hdu.wsn.uDiskReader.usb.jnilib.UDiskLib;
@@ -188,6 +190,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 } else {
                     showView();
                 }
+
+            }
+
+            @Override
+            public void onItemLongClick(View view, int position) {
 
             }
         });

@@ -1,14 +1,15 @@
 package com.hdu.wsn.uDiskReader.ui;
 
-import android.content.BroadcastReceiver;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.provider.DocumentFile;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -22,11 +23,16 @@ import android.widget.Toast;
 import com.ethanco.lib.PasswordDialog;
 import com.ethanco.lib.abs.OnPositiveButtonListener;
 import com.hdu.wsn.uDiskReader.R;
-import com.hdu.wsn.uDiskReader.usb.file.FileReader;
+import com.hdu.wsn.uDiskReader.ui.presenter.DocumentFilePresenter;
+import com.hdu.wsn.uDiskReader.ui.presenter.FilePresenter;
+import com.hdu.wsn.uDiskReader.ui.view.DocumentFileAdapter;
+import com.hdu.wsn.uDiskReader.ui.view.FileAdapter;
+import com.hdu.wsn.uDiskReader.ui.view.FileView;
+import com.hdu.wsn.uDiskReader.ui.view.MyItemDecoration;
 import com.hdu.wsn.uDiskReader.usb.jnilib.UDiskConnection;
 import com.hdu.wsn.uDiskReader.usb.jnilib.UDiskLib;
 
-public class FileActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, FileView{
+public class FileActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, FileView {
     private static String TAG = "MainActivity";
 
     private Context context;
@@ -35,18 +41,36 @@ public class FileActivity extends AppCompatActivity implements SwipeRefreshLayou
     private RecyclerView recyclerView;
     private UDiskLib uDiskLib;
     private boolean alreadyLogin = false;    // SDK操作完后判断是否还处于登录的标记
-    private FileReader fileReader;
-    private FileAdapter adapter;
+    private FilePresenter filePresenter;
+    private DocumentFileAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = getApplicationContext();
-        fileReader = new FileReader(this, context);
+
         initView();
-        registerReceiver();
-        onRefresh();
+        initPermission();
+    }
+
+    private void initPermission() {
+        Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);//ACTION_OPEN_DOCUMENT
+        startActivityForResult(intent, 42);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent resultData) {
+
+        if (requestCode == 42 && resultCode == Activity.RESULT_OK) {
+            Uri rootUri;
+            if (resultData != null) {
+                rootUri = resultData.getData();
+                filePresenter = new DocumentFilePresenter(this, context, rootUri);
+                onRefresh();
+            }
+        }
     }
 
     /**
@@ -79,104 +103,34 @@ public class FileActivity extends AppCompatActivity implements SwipeRefreshLayou
         });
     }
 
-    /**
-     * 注册接收器
-     */
-    private void registerReceiver() {
-        //监听otg插入 拔出
-        IntentFilter usbDeviceStateFilter = new IntentFilter();
-        usbDeviceStateFilter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-        usbDeviceStateFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        usbDeviceStateFilter.addAction(Intent.ACTION_MEDIA_EJECT);
-        usbDeviceStateFilter.addAction(Intent.ACTION_MEDIA_MOUNTED);
-        usbDeviceStateFilter.addAction(Intent.ACTION_MEDIA_REMOVED);
-        usbDeviceStateFilter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
-        usbDeviceStateFilter.addDataScheme("file");
-
-        registerReceiver(usbReceiver, usbDeviceStateFilter);
-
-    }
-
-    /**
-     * u盘插拔广播接收器
-     */
-    private BroadcastReceiver usbReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            switch (action) {
-                //接收到U盘插入的广播
-                case UsbManager.ACTION_USB_DEVICE_ATTACHED:
-                    UsbDevice device_in = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                    if (device_in != null) {
-                        //进行读写操作
-                        Log.e(TAG, "U盘插入");
-                        fileReader.setLoginFlag(alreadyLogin);
-                        alreadyLogin = false;
-                        onRefresh();
-                    }
-                    break;
-                //接收到U盘拔出的广播
-                case UsbManager.ACTION_USB_DEVICE_DETACHED:
-                    UsbDevice device_out = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                    if (device_out != null) {
-                        //更新界面
-                        Log.e(TAG, "U盘拔出");
-                        adapter.notifyDataSetChanged();
-                        doLogout();
-                    }
-                    break;
-                case Intent.ACTION_MEDIA_MOUNTED:
-                    Log.e(TAG, "U盘插入");
-                    fileReader.setLoginFlag(alreadyLogin);
-                    alreadyLogin = false;
-                    onRefresh();
-                    break;
-                case Intent.ACTION_MEDIA_REMOVED:
-                    device_out = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                    if (device_out != null) {
-                        //更新界面
-                        Log.e(TAG, "U盘拔出");
-                        adapter.notifyDataSetChanged();
-                        doLogout();
-                    }
-                    break;
-            }
-        }
-    };
-
     //刷新界面
     @Override
     public void onRefresh() {
         tvDebug.setText("");
         swipeRefreshLayout.setRefreshing(true);
-        fileReader.refresh();
+        if (filePresenter == null) {
+            initPermission();
+        } else {
+            filePresenter.refresh();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (usbReceiver != null) {
-            unregisterReceiver(usbReceiver);
-            usbReceiver = null;
-        }
+        filePresenter.unRegisterReceive();
         doLogout();
     }
 
     @Override
     public void onBackPressed() {
-        if (fileReader.isRootView()) {
-            fileReader.returnPreFolder();
-        } else if (fileReader.isLogin()) {
+        if (filePresenter.isRootView()) {
+            filePresenter.returnPreFolder();
+        } else if (filePresenter.isLogin()) {
             logout();
         } else {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public String getNowText() {
-        return tvDebug.getText().toString();
     }
 
     @Override
@@ -186,9 +140,14 @@ public class FileActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     @Override
-    public void setAdapter(FileAdapter adapter) {
+    public void setAdapter(DocumentFileAdapter adapter) {
         this.adapter = adapter;
         recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    public DocumentFileAdapter getAdapter() {
+        return adapter;
     }
 
     @Override
@@ -219,6 +178,25 @@ public class FileActivity extends AppCompatActivity implements SwipeRefreshLayou
         builder.create().show();
     }
 
+    @Override
+    public void onUDiskInsert(Intent intent) {
+        //进行读写操作
+        Log.e(TAG, "U盘插入");
+        filePresenter.setLoginFlag(alreadyLogin);
+        alreadyLogin = false;
+        onRefresh();
+    }
+
+    @Override
+    public void onUDiskRemove(Intent intent) {
+        UsbDevice device_out = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+        if (device_out != null) {
+            //更新界面
+            Log.e(TAG, "U盘拔出");
+            adapter.notifyDataSetChanged();
+            doLogout();
+        }
+    }
 
     /**
      * 执行登录
@@ -237,7 +215,7 @@ public class FileActivity extends AppCompatActivity implements SwipeRefreshLayou
             public void call(int result) {
                 Toast.makeText(context, "login success", Toast.LENGTH_SHORT);
                 alreadyLogin = true;
-                fileReader.setLoginFlag(alreadyLogin);
+                filePresenter.setLoginFlag(alreadyLogin);
                 onRefresh();
             }
         }).close().doAction();
@@ -276,7 +254,7 @@ public class FileActivity extends AppCompatActivity implements SwipeRefreshLayou
             @Override
             public void call(int result) {
                 Toast.makeText(context, "logOut success", Toast.LENGTH_SHORT);
-                fileReader.setLoginFlag(false);
+                filePresenter.setLoginFlag(false);
                 onRefresh();
             }
         }).close().doAction();

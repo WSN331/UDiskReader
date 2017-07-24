@@ -1,4 +1,4 @@
-package com.hdu.wsn.uDiskReader.ui;
+package com.hdu.wsn.uDiskReader.ui.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;

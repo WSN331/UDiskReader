@@ -1,4 +1,4 @@
-package com.hdu.wsn.uDiskReader.ui;
+package com.hdu.wsn.uDiskReader.ui.view;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -17,7 +17,7 @@ import java.util.List;
  * Created by 杨健 on 2017/5/10.
  */
 
-public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> implements View.OnClickListener {
+public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> implements View.OnLongClickListener, View.OnClickListener {
     // 文件列表
     private List<File> data;
     private OnRecyclerViewItemClickListener onRecyclerViewItemClickListener = null;
@@ -31,6 +31,11 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> im
         }
     }
 
+    public void removeData(int position) {
+        data.remove(position);
+        notifyDataSetChanged();
+    }
+
     public FileAdapter(List<File> data) {
         this.data = data;
     }
@@ -39,6 +44,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> im
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.file_item_layout, parent, false);
         view.setOnClickListener(this);
+        view.setOnLongClickListener(this);
         return new ViewHolder(view);
     }
 
@@ -73,6 +79,14 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> im
     }
 
     @Override
+    public boolean onLongClick(View v) {
+        if (onRecyclerViewItemClickListener != null) {
+            onRecyclerViewItemClickListener.onItemLongClick(v, (int) v.getTag());
+        }
+        return true;
+    }
+
+    @Override
     public void onClick(View v) {
         if (onRecyclerViewItemClickListener != null) {
             onRecyclerViewItemClickListener.onItemClick(v, (int) v.getTag());
@@ -94,6 +108,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> im
 
     public interface OnRecyclerViewItemClickListener {
         void onItemClick(View view, int position);
+        void onItemLongClick(View view, int position);
     }
 
     public void setOnRecyclerViewItemClickListener(OnRecyclerViewItemClickListener onRecyclerViewItemClickListener) {

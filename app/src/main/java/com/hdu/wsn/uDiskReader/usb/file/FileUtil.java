@@ -3,6 +3,7 @@ package com.hdu.wsn.uDiskReader.usb.file;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.provider.DocumentFile;
 
 import com.hdu.wsn.uDiskReader.R;
 
@@ -36,24 +37,46 @@ public class FileUtil {
         context.startActivity(intent);
     }
 
+    public static void openDocumentFile(DocumentFile file, Context context) {
+        Intent intent = new Intent();
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        //设置intent的Action属性
+        intent.setAction(Intent.ACTION_VIEW);
+        //获取文件file的MIME类型
+        String type = getMIMEType(file);
+        //设置intent的data和Type属性。
+        intent.setDataAndType(file.getUri(), type);
+        //跳转
+        context.startActivity(intent);
+    }
+
     /**
      * 删除文件
      * @param file 文件
      */
-    public void deleteFile(File file) {
-        if (file.exists()) { // 判断文件是否存在
-            if (file.isFile()) { // 判断是否是文件
-                file.delete(); // delete()方法 你应该知道 是删除的意思;
-            } else if (file.isDirectory()) { // 否则如果它是一个目录
-                File files[] = file.listFiles(); // 声明目录下所有的文件 files[];
-                for (int i = 0; i < files.length; i++) { // 遍历目录下所有的文件
-                    this.deleteFile(files[i]); // 把每个文件 用这个方法进行迭代
+    public static boolean deleteFile(DocumentFile file) {
+        boolean b = true;
+        if (file.exists()) {
+            if (file.isFile()) {
+                System.gc();
+                b = file.delete();
+                System.out.println(b);
+            } else if (file.isDirectory()) {
+                DocumentFile files[] = file.listFiles();
+                for (int i = 0; i < files.length; i++) {
+                    b = b && deleteFile(files[i]);
                 }
+                b = b && file.delete();
             }
-            file.delete();
+            return b;
         } else {
             System.out.println("文件不存在！"+"\n");
+            return false;
         }
+    }
+
+    public static boolean deleteSdCardFile(File file) {
+        return false;
     }
 
     /**
@@ -62,6 +85,26 @@ public class FileUtil {
      * @param file
      */
     public static String getMIMEType(File file) {
+
+        String type = "*/*";
+        String fName = file.getName();
+        //获取后缀名前的分隔符"."在fName中的位置。
+        int dotIndex = fName.lastIndexOf(".");
+        if (dotIndex < 0) {
+            return type;
+        }
+        /* 获取文件的后缀名 */
+        String end = fName.substring(dotIndex, fName.length()).toLowerCase();
+        if (end == "") return type;
+        //在MIME和文件类型的匹配表中找到对应的MIME类型。
+        for (int i = 0; i < MIME_MapTable.length; i++) { //MIME_MapTable??在这里你一定有疑问，这个MIME_MapTable是什么？
+            if (end.equals(MIME_MapTable[i][0]))
+                type = MIME_MapTable[i][1];
+        }
+        return type;
+    }
+
+    public static String getMIMEType(DocumentFile file) {
 
         String type = "*/*";
         String fName = file.getName();

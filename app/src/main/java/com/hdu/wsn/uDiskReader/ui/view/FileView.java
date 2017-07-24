@@ -1,16 +1,12 @@
-package com.hdu.wsn.uDiskReader.ui;
+package com.hdu.wsn.uDiskReader.ui.view;
+
+import android.content.Intent;
 
 /**
  * Created by ASUS on 2017/7/19 0019.
  */
 
 public interface FileView {
-
-    /**
-     *  获取现在的标题
-     * @return 现在标题
-     */
-    String getNowText();
 
     /**
      * 设置标题
@@ -23,7 +19,13 @@ public interface FileView {
      * 给列表设置适配器
      * @param adapter 适配器
      */
-    void setAdapter(FileAdapter adapter);
+    void setAdapter(DocumentFileAdapter adapter);
+
+    /**
+     * 获取适配器
+     * @return 适配器
+     */
+    DocumentFileAdapter getAdapter();
 
     /**
      * 设置刷新条
@@ -35,4 +37,16 @@ public interface FileView {
      * 显示密码框
      */
     void showPasswordView();
+
+    /**
+     * u盘插入的操作
+     * @param intent
+     */
+    void onUDiskInsert(Intent intent);
+
+    /**
+     * u盘移除的操作
+     * @param intent
+     */
+    void onUDiskRemove(Intent intent);
 }
