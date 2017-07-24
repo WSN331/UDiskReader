@@ -49,6 +49,7 @@ public class DocumentFilePresenter implements FilePresenter{
     private void readDeviceList() {
         context.getContentResolver().takePersistableUriPermission(rootUri,Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         currentFolder = DocumentFile.fromTreeUri(context, rootUri);
+        getAllFiles();
     }
 
     /**

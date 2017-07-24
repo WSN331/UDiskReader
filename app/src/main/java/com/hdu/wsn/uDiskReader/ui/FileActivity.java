@@ -62,7 +62,6 @@ public class FileActivity extends AppCompatActivity implements SwipeRefreshLayou
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
-
         if (requestCode == 42 && resultCode == Activity.RESULT_OK) {
             Uri rootUri;
             if (resultData != null) {
@@ -183,7 +182,7 @@ public class FileActivity extends AppCompatActivity implements SwipeRefreshLayou
         Log.e(TAG, "U盘插入");
         filePresenter.setLoginFlag(alreadyLogin);
         alreadyLogin = false;
-        onRefresh();
+        initPermission();
     }
 
     @Override
