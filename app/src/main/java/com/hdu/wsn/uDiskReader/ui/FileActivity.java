@@ -9,7 +9,6 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.provider.DocumentFile;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -26,7 +25,6 @@ import com.hdu.wsn.uDiskReader.R;
 import com.hdu.wsn.uDiskReader.ui.presenter.DocumentFilePresenter;
 import com.hdu.wsn.uDiskReader.ui.presenter.FilePresenter;
 import com.hdu.wsn.uDiskReader.ui.view.DocumentFileAdapter;
-import com.hdu.wsn.uDiskReader.ui.view.FileAdapter;
 import com.hdu.wsn.uDiskReader.ui.view.FileView;
 import com.hdu.wsn.uDiskReader.ui.view.MyItemDecoration;
 import com.hdu.wsn.uDiskReader.usb.jnilib.UDiskConnection;
@@ -49,11 +47,13 @@ public class FileActivity extends AppCompatActivity implements SwipeRefreshLayou
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = getApplicationContext();
-
         initView();
         initPermission();
     }
 
+    /**
+     * 初始化权限
+     */
     private void initPermission() {
         Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);//ACTION_OPEN_DOCUMENT
         startActivityForResult(intent, 42);
@@ -103,7 +103,6 @@ public class FileActivity extends AppCompatActivity implements SwipeRefreshLayou
         });
     }
 
-    //刷新界面
     @Override
     public void onRefresh() {
         tvDebug.setText("");
@@ -244,7 +243,6 @@ public class FileActivity extends AppCompatActivity implements SwipeRefreshLayou
      */
     private void doLogout() {
         uDiskLib = UDiskLib.create(context);
-        //TODO test
         UDiskConnection.create(uDiskLib, new UDiskConnection.Action() {
             @Override
             public int action(UDiskLib diskLib) {

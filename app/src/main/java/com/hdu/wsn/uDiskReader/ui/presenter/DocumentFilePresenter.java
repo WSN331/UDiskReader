@@ -11,14 +11,11 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.provider.DocumentFile;
 import android.view.View;
 
-import com.hdu.wsn.uDiskReader.ui.presenter.FilePresenter;
 import com.hdu.wsn.uDiskReader.ui.view.DocumentFileAdapter;
-import com.hdu.wsn.uDiskReader.ui.view.FileAdapter;
 import com.hdu.wsn.uDiskReader.ui.view.FileView;
 import com.hdu.wsn.uDiskReader.usb.file.FileUtil;
 import com.hdu.wsn.uDiskReader.usb.jnilib.UDiskLib;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
