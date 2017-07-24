@@ -131,12 +131,9 @@ public class DocumentFilePresenter implements FilePresenter{
 
             @Override
             public void onItemLongClick(View view, int position) {
-                System.out.println("xxxxxxx");
                 int index = getRealPosition(position);
                 if (index > 0) {
                     DocumentFile file = fileList.get(index - 1);
-                    final Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                    context.startActivity(intent);
                     boolean result = FileUtil.deleteFile(file);
                     if (result) {
                         fileView.getAdapter().removeData(index-1);
@@ -160,27 +157,20 @@ public class DocumentFilePresenter implements FilePresenter{
         return index;
     }
 
-    /**
-     * 判断是不是根路径
-     * @return 是否是根路径
-     */
+    @Override
     public boolean isRootView() {
         return currentFolderList.size() > 0;
     }
 
-    /**
-     * 返回上一层目录
-     */
+    @Override
     public void returnPreFolder() {
         currentFolder = currentFolderList.get(currentFolderList.size() - 1);
         currentFolderList.remove(currentFolderList.size() - 1);
         getAllFiles();
     }
 
-    /**
-     * 刷新
-     */
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    @Override
     public void refresh() {
         if (currentFolder == null) {
             readDeviceList();
@@ -189,12 +179,22 @@ public class DocumentFilePresenter implements FilePresenter{
         }
     }
 
+    @Override
     public void setLoginFlag(boolean loginFlag) {
         this.loginFlag = loginFlag;
     }
 
+    @Override
     public boolean isLogin() {
         return loginFlag;
+    }
+
+    @Override
+    public void unRegisterReceive() {
+        if (usbReceiver != null) {
+            context.unregisterReceiver(usbReceiver);
+            usbReceiver = null;
+        }
     }
 
     /**
@@ -213,16 +213,6 @@ public class DocumentFilePresenter implements FilePresenter{
 
         context.registerReceiver(usbReceiver, usbDeviceStateFilter);
 
-    }
-
-    /**
-     * 注销广播
-     */
-    public void unRegisterReceive() {
-        if (usbReceiver != null) {
-            context.unregisterReceiver(usbReceiver);
-            usbReceiver = null;
-        }
     }
 
     /**

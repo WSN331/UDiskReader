@@ -37,6 +37,11 @@ public class FileUtil {
         context.startActivity(intent);
     }
 
+    /**
+     * 打开Document形式的文件
+     * @param file 文件
+     * @param context 系统环境上下文
+     */
     public static void openDocumentFile(DocumentFile file, Context context) {
         Intent intent = new Intent();
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -75,10 +80,6 @@ public class FileUtil {
         }
     }
 
-    public static boolean deleteSdCardFile(File file) {
-        return false;
-    }
-
     /**
      * 根据文件后缀名获得对应的MIME类型。
      *
@@ -104,6 +105,11 @@ public class FileUtil {
         return type;
     }
 
+    /**
+     * Document形式的文件的类型
+     * @param file 文件
+     * @return 类型
+     */
     public static String getMIMEType(DocumentFile file) {
 
         String type = "*/*";
